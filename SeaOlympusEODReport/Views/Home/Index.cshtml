@@ -1,31 +1,273 @@
-﻿@{
-    ViewBag.Title = "Home Page";
-}
-
-<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+﻿<h3 style="margin-bottom: 15px;">EOD Report</h3>
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <div class="row">
+            <div class="col-md-12">
+                <table border="0" style="width: 100%">
+                    <tr>
+                        <td style="width: 29%">
+                            <form>
+                                <div class="input-group">
+                                    <span class="input-group-addon"><b>Start SI No.</b></span>
+                                    <input type="text" class="form-control" id="inpStartSINumber" placeholder="Start SI Number...">
+                                </div>
+                            </form>
+                        </td>
+                        <td style="width: 1%"></td>
+                        <td style="width: 29%">
+                            <form>
+                                <div class="input-group">
+                                    <span class="input-group-addon"><b>End SI No.</b></span>
+                                    <input type="text" class="form-control" id="inpEndSINumber" placeholder="End SI Number...">
+                                </div>
+                            </form>
+                        </td>
+                        <td style="width: 1%"></td>
+                        <td style="width: 40%" align="right">
+                            <button class="btn btn-primary" onclick="btnGenerateOnclick()">Generate</button>
+                            <button class="btn btn-success" onclick="btnDownloadCSVOnclick()">Download CSV</button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="panel-body">
+        <div id="reportFlexGrid"></div>
+    </div>
+    <div class="panel-footer">
+        <div class="row">
+            <div class="btn-group col-md-7" id="reportNavigationPageGrid">
+                <button type="button" class="btn btn-default border-custom" id="btnReportMoveToFirstPageGrid">
+                    <span class="glyphicon glyphicon-fast-backward"></span>
+                </button>
+                <button type="button" class="btn btn-default border-custom" id="btnReportMoveToPreviousPageGrid">
+                    <span class="glyphicon glyphicon-step-backward"></span>
+                </button>
+                <button type="button" class="btn btn-default border-custom" disabled style="width: 100px" id="btnReportCurrentPageGrid"></button>
+                <button type="button" class="btn btn-default border-custom" id="btnReportMoveToNextPageGrid">
+                    <span class="glyphicon glyphicon-step-forward"></span>
+                </button>
+                <button type="button" class="btn btn-default border-custom" id="btnReportMoveToLastPageGrid">
+                    <span class="glyphicon glyphicon-fast-forward"></span>
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="row">
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-            enables a clean separation of concerns and gives you full control over markup
-            for enjoyable, agile development.
-        </p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-    </div>
-</div>
+@Scripts.Render("~/bundles/wijmo/scripts")
+<script type="text/javascript">
+    // Global Variables
+    var reportObservableArray = new wijmo.collections.ObservableArray;
+    var reportCollectionView = new wijmo.collections.CollectionView(reportObservableArray);
+    var reportFlexGrid = new wijmo.grid.FlexGrid('#reportFlexGrid');
+    var reportFlexGridFilter = new wijmo.grid.filter.FlexGridFilter(reportFlexGrid);
+    var btnReportMoveToFirstPageGrid = document.getElementById('btnReportMoveToFirstPageGrid');
+    var btnReportMoveToPreviousPageGrid = document.getElementById('btnReportMoveToPreviousPageGrid');
+    var btnReportMoveToNextPageGrid = document.getElementById('btnReportMoveToNextPageGrid');
+    var btnReportMoveToLastPageGrid = document.getElementById('btnReportMoveToLastPageGrid');
+    var btnReportCurrentPageGrid = document.getElementById('btnReportCurrentPageGrid');
+
+    // Initialize Components
+    function initializeComponents() {
+        createReportFlexGrid();
+    }
+
+    // Get Data
+    function getReportData() {
+        reportObservableArray = new wijmo.collections.ObservableArray;
+
+        $.ajax({
+            url: '/',
+            cache: false,
+            type: 'GET',
+            contentType: 'application/json; charset=utf-8',
+            success: function (results) {
+                if (results.length > 0) {
+                    for (i = 0; i < results.length; i++) {
+                        reportObservableArray.push({
+
+                        });
+                    }
+                }
+            }
+        });
+
+        return reportObservableArray;
+    }
+
+    // Create Flex Grid
+    function createReportFlexGrid() {
+        reportCollectionView = new wijmo.collections.CollectionView(getReportData());
+        reportCollectionView.canFilter = true;
+        reportCollectionView.pageSize = 15;
+
+        reportCollectionView.collectionChanged.addHandler(function (sender, args) {
+            updateReportNavigationButtons();
+        });
+
+        reportCollectionView.currentChanged.addHandler(function (sender, args) {
+            updateReportDetailsFlexGridSelection();
+        });
+
+        reportFlexGrid.dispose();
+        reportFlexGrid = new wijmo.grid.FlexGrid('#reportFlexGrid');
+        reportFlexGrid.initialize({
+            columns: [
+                {
+                    "header": "Invoice Id",
+                    "binding": "",
+                    "allowSorting": true,
+                    "width": 100
+                },
+                {
+                    "header": "Invoice Number",
+                    "binding": "",
+                    "allowSorting": true,
+                    "width": 100
+                },
+                {
+                    "header": "Netsuite Internal Id",
+                    "binding": "",
+                    "allowSorting": true,
+                    "width": 100
+                },
+                {
+                    "header": "Customer Name",
+                    "binding": "",
+                    "allowSorting": true,
+                    "width": 100
+                },
+                {
+                    "header": "Price Net of Discount",
+                    "binding": "",
+                    "allowSorting": true,
+                    "width": 100
+                },
+                {
+                    "header": "Quantity",
+                    "binding": "",
+                    "allowSorting": true,
+                    "width": 100
+                },
+                {
+                    "header": "Tax Code Internal Id",
+                    "binding": "",
+                    "allowSorting": true,
+                    "width": 100
+                },
+                {
+                    "header": "Tax Code",
+                    "binding": "",
+                    "allowSorting": true,
+                    "width": 100
+                },
+                {
+                    "header": "Location Id",
+                    "binding": "",
+                    "allowSorting": true,
+                    "width": 100
+                },
+                {
+                    "header": "Store Id",
+                    "binding": "",
+                    "allowSorting": true,
+                    "width": 100
+                },
+                {
+                    "header": "Subsidary Id",
+                    "binding": "",
+                    "allowSorting": true,
+                    "width": 100
+                },
+                {
+                    "header": "Subsidary Name",
+                    "binding": "",
+                    "allowSorting": true,
+                    "width": 100
+                },
+                {
+                    "header": "Sales Date",
+                    "binding": "",
+                    "allowSorting": true,
+                    "width": 100
+                }
+            ],
+            autoGenerateColumns: false,
+            itemsSource: reportCollectionView,
+            isReadOnly: true,
+            autoSizeMode: wijmo.grid.AutoSizeMode.Both,
+            allowDragging: wijmo.grid.AllowDragging.None,
+            selectionMode: wijmo.grid.SelectionMode.Row
+        });
+
+        reportFlexGrid.trackChanges = true;
+
+        reportFlexGridFilter = new wijmo.grid.filter.FlexGridFilter(reportFlexGrid);
+        reportFlexGridFilter.defaultFilterType = wijmo.grid.filter.FilterType.Both;
+
+        updateReportNavigationButtons();
+
+        btnReportMoveToFirstPageGrid.addEventListener('click', function () {
+            reportCollectionView.moveToFirstPage();
+            updateReportNavigationButtons();
+        });
+
+        btnReportMoveToPreviousPageGrid.addEventListener('click', function () {
+            reportCollectionView.moveToPreviousPage();
+            updateReportNavigationButtons();
+        });
+
+        btnReportMoveToNextPageGrid.addEventListener('click', function () {
+            reportCollectionView.moveToNextPage();
+            updateReportNavigationButtons();
+        });
+
+        btnReportMoveToLastPageGrid.addEventListener('click', function () {
+            reportCollectionView.moveToLastPage();
+            updateReportNavigationButtons();
+        });
+    }
+
+    // Update Navigation Buttons
+    function updateReportNavigationButtons() {
+        if (reportCollectionView.pageSize <= 0) {
+            document.getElementById('reportNavigationPageGrid').style.display = 'none';
+            return;
+        }
+        document.getElementById('reportNavigationPageGrid').style.display = 'block';
+        if (reportCollectionView.pageIndex === 0) {
+            btnReportMoveToFirstPageGrid.setAttribute('disabled', 'disabled');
+            btnReportMoveToPreviousPageGrid.setAttribute('disabled', 'disabled');
+            btnReportMoveToNextPageGrid.removeAttribute('disabled');
+            btnReportMoveToLastPageGrid.removeAttribute('disabled');
+        } else if (reportCollectionView.pageIndex === (reportCollectionView.pageCount - 1)) {
+            btnReportMoveToFirstPageGrid.removeAttribute('disabled');
+            btnReportMoveToPreviousPageGrid.removeAttribute('disabled');
+            btnReportMoveToNextPageGrid.setAttribute('disabled', 'disabled');
+            btnReportMoveToLastPageGrid.setAttribute('disabled', 'disabled');
+        } else {
+            btnReportMoveToFirstPageGrid.removeAttribute('disabled');
+            btnReportMoveToPreviousPageGrid.removeAttribute('disabled');
+            btnReportMoveToNextPageGrid.removeAttribute('disabled');
+            btnReportMoveToLastPageGrid.removeAttribute('disabled');
+        }
+        btnReportCurrentPageGrid.innerHTML = (reportCollectionView.pageIndex + 1) + ' / ' + reportCollectionView.pageCount;
+    }
+
+    // Generate
+    function btnGenerateOnclick() {
+
+    }
+
+    // Download CSV File
+    function btnDownloadCSVOnclick() {
+
+    }
+
+    // On-Load Page
+    window.onload = function () {
+        initializeComponents();
+    }
+</script>

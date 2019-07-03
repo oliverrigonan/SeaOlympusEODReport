@@ -202,6 +202,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApiControllers\ApiEODReportController.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\IdentityConfig.cs" />
@@ -211,6 +212,7 @@
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
+    <Compile Include="Entities\EODReport.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -234,6 +236,17 @@
     <Content Include="ApplicationInsights.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Scripts\npm.js" />
+    <Content Include="Wijmo\scripts\wijmo.grid.filter.js" />
+    <Content Include="Wijmo\scripts\wijmo.grid.filter.min.js" />
+    <Content Include="Wijmo\scripts\wijmo.grid.js" />
+    <Content Include="Wijmo\scripts\wijmo.grid.min.js" />
+    <Content Include="Wijmo\scripts\wijmo.input.js" />
+    <Content Include="Wijmo\scripts\wijmo.input.min.js" />
+    <Content Include="Wijmo\scripts\wijmo.js" />
+    <Content Include="Wijmo\scripts\wijmo.min.js" />
+    <Content Include="Wijmo\styles\wijmo.css" />
+    <Content Include="Wijmo\styles\wijmo.min.css" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
     <Content Include="Scripts\jquery-3.3.1.js" />
     <Content Include="Scripts\jquery-3.3.1.min.js" />
@@ -282,6 +295,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Data\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff2" />
